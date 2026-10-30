@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haule System - TikTok Live Automation & Coin Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        },
+                        darkBg: '#0b0f19',
+                        darkCard: '#111827',
+                        darkBorder: '#1f2937'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.15); }
+            50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.4); }
+        }
+        .glow-box { animation: glow 3s infinite; }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.8); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
+        }
+        .gift-anim { animation: floatUp 1.8s forwards ease-out; }
+    </style>
+</head>
+<body class="bg-darkBg text-gray-100 min-h-screen flex flex-col font-sans antialiased">
+
+    <!-- Top Accent Bar (Gọn nhẹ) -->
+    <div class="h-1 bg-gradient-to-r from-brand-600 via-emerald-400 to-green-500 w-full"></div>
+
+    <!-- Navigation Header -->
+    <header class="bg-darkCard border-b border-darkBorder sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="App.switchTab('giftcode')">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center font-bold text-lg text-white shadow-lg">
+                    H
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-wider text-white flex items-center gap-1">
+                        HAULE <span class="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded border border-brand-500/30">v3.5</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- User Status & Logout -->
+            <div id="navUserArea" class="hidden flex items-center space-x-4">
+                <div class="bg-darkBg px-3 py-1.5 rounded-lg border border-darkBorder flex items-center gap-2">
+                    <i class="fa-solid fa-coins text-yellow-400"></i>
+                    <span id="navUserCoins" class="font-bold text-yellow-400 text-sm">0</span>
+                    <span class="text-xs text-gray-400">Xu</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span id="navUserName" class="text-sm font-semibold text-gray-200">User</span>
+                    <span id="navUserRole" class="text-[10px] px-2 py-0.5 rounded font-bold uppercase">Member</span>
+                </div>
+
+                <button onclick="App.logout()" class="text-gray-400 hover:text-red-400 text-sm p-1.5 transition" title="Đăng xuất">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+
+        <!-- AUTH SCREEN (LOGIN & REGISTER) -->
+        <section id="authSection" class="max-w-md mx-auto my-12">
+            <div class="bg-darkCard p-8 rounded-2xl border border-darkBorder shadow-2xl glow-box">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-black text-white mb-1">Haule System</h2>
+                    <p class="text-gray-400 text-sm">Đăng nhập hoặc đăng ký tài khoản mới</p>
+                </div>
+
+                <!-- Auth Tabs Switcher -->
+                <div class="flex border-b border-darkBorder mb-6">
+                    <button id="authTabLoginBtn" onclick="App.switchAuthTab('login')" class="flex-1 py-2 font-bold text-brand-500 border-b-2 border-brand-500 transition">Đăng Nhập</button>
+                    <button id="authTabRegBtn" onclick="App.switchAuthTab('register')" class="flex-1 py-2 font-bold text-gray-400 hover:text-white transition">Đăng Ký</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="formLogin" onsubmit="App.handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Tài khoản</label>
+                        <input type="text" id="loginUser" required class="w-full bg-darkBg border border-darkBorder rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Mật khẩu</label>
+                        <input type="password" id="loginPass" required class="w-full bg-darkBg border border-darkBorder rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 text-white">
+                    </div>
+                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-lg">Đăng Nhập Ngay</button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="formRegister" onsubmit="App.handleRegister(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Tài khoản mới</label>
+                        <input type="text" id="regUser" required class="w-full bg-darkBg border border-darkBorder rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Mật khẩu</label>
+                        <input type="password" id="regPass" required class="w-full bg-darkBg border border-darkBorder rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 text-white">
+                    </div>
+                    <!-- Captcha -->
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Xác minh Captcha: <span id="captchaTxt" class="font-bold text-brand-400"></span></label>
+                        <input type="number" id="regCaptcha" required placeholder="Nhập kết quả phép tính" class="w-full bg-darkBg border border-darkBorder rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 text-white">
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-lg">Đăng Ký Tài Khoản</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboardSection" class="hidden space-y-6">
+
+            <!-- Sub Nav Tabs -->
+            <div class="flex flex-wrap gap-2 border-b border-darkBorder pb-3">
+                <button onclick="App.switchTab('giftcode')" id="navBtn-giftcode" class="tab-nav-btn px-4 py-2 rounded-xl text-sm font-bold bg-brand-600 text-white flex items-center gap-2 transition">
+                    <i class="fa-solid fa-gift"></i> Nhập Giftcode
+                </button>
+                <button onclick="App.switchTab('shop')" id="navBtn-shop" class="tab-nav-btn px-4 py-2 rounded-xl text-sm font-bold bg-darkCard text-gray-400 hover:text-white flex items-center gap-2 transition">
+                    <i class="fa-solid fa-store"></i> Shop & Tạo Key
+                </button>
+                <button onclick="App.switchTab('mykeys')" id="navBtn-mykeys" class="tab-nav-btn px-4 py-2 rounded-xl text-sm font-bold bg-darkCard text-gray-400 hover:text-white flex items-center gap-2 transition">
+                    <i class="fa-solid fa-key"></i> Kho Key Của Tôi
+                </button>
+                <button onclick="App.switchTab('live')" id="navBtn-live" class="tab-nav-btn px-4 py-2 rounded-xl text-sm font-bold bg-darkCard text-gray-400 hover:text-white flex items-center gap-2 transition">
+                    <i class="fa-solid fa-video"></i> TikTok Live AI
+                </button>
+                <button onclick="App.switchTab('history')" id="navBtn-history" class="tab-nav-btn px-4 py-2 rounded-xl text-sm font-bold bg-darkCard text-gray-400 hover:text-white flex items-center gap-2 transition">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử
+                </button>
+
+                <!-- Admin Tab Button -->
+                <button onclick="App.switchTab('admin')" id="adminNavBtn" class="hidden ml-auto px-4 py-2 rounded-xl text-sm font-bold bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/30 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-user-shield"></i> Admin Dashboard
+                </button>
+            </div>
+
+            <!-- TAB 1: NHẬP GIFTCODE -->
+            <div id="tabPane-giftcode" class="tab-pane space-y-6">
+                <div class="bg-darkCard p-8 rounded-2xl border border-darkBorder max-w-xl mx-auto glow-box text-center space-y-4">
+                    <div class="w-16 h-16 bg-brand-500/10 text-brand-400 rounded-full flex items-center justify-center mx-auto text-3xl">
+                        <i class="fa-solid fa-gift"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-white">Đổi Giftcode Nhận Xu</h3>
+                    <p class="text-gray-400 text-sm">Nhập mã quà tặng do quản trị viên phát hành để nhận xu tích lũy.</p>
+
+                    <form onsubmit="App.redeemGiftcode(event)" class="flex gap-2 max-w-md mx-auto pt-2">
+                        <input type="text" id="inputGiftcodeVal" placeholder="NHẬP MÃ TẠI ĐÂY..." required class="flex-1 bg-darkBg border border-darkBorder rounded-xl px-4 py-3 text-center font-mono font-bold uppercase tracking-wider text-brand-400 focus:outline-none focus:border-brand-500">
+                        <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white font-bold px-6 py-3 rounded-xl transition shadow-lg">Kích Hoạt</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB 2: SHOP & TẠO KEY TÙY CHỌN -->
+            <div id="tabPane-shop" class="tab-pane hidden space-y-6">
+                <!-- Tự tạo key tùy chọn -->
+                <div class="bg-darkCard p-6 rounded-2xl border border-brand-500/30 bg-gradient-to-r from-darkCard to-brand-950/20 shadow-xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid fa-sliders"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Tạo Key VIP Tùy Chọn Thời Gian</h3>
+                            <p class="text-xs text-gray-400">Quy tắc chuẩn: <span class="text-brand-400 font-bold">5 Phút = 500 Coin</span> (Cứ 1 phút = 100 Coin)</p>
+                        </div>
+                    </div>
+
+                    <form onsubmit="App.createCustomKey(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Số phút muốn mua:</label>
+                            <input type="number" id="shopMinutesInput" min="1" max="1440" value="5" oninput="App.calcCustomPrice()" required class="w-full bg-darkBg border border-darkBorder rounded-xl px-4 py-2.5 text-white font-bold focus:outline-none focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Tổng tiền thanh toán:</label>
+                            <div class="bg-darkBg border border-darkBorder rounded-xl px-4 py-2.5 flex items-center gap-2">
+                                <i class="fa-solid fa-coins text-yellow-400"></i>
+                                <span id="shopPriceDisplay" class="font-bold text-yellow-400">500</span>
+                                <span class="text-xs text-gray-400">Coin</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white font-bold py-2.5 px-6 rounded-xl transition flex items-center justify-center gap-2 shadow-lg">
+                            <i class="fa-solid fa-cart-shopping"></i> Mua Key Ngay
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Gói Cố Định -->
+                <h3 class="text-md font-bold text-gray-300 flex items-center gap-2">
+                    <i class="fa-solid fa-box-archive"></i> Các Gói VIP Phổ Biến
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-darkCard p-6 rounded-2xl border border-darkBorder flex flex-col justify-between">
+                        <div>
+                            <span class="bg-brand-500/10 text-brand-400 text-xs font-bold px-3 py-1 rounded-full border border-brand-500/20">5 PHÚT</span>
+                            <h4 class="text-lg font-bold text-white mt-3 mb-1">Gói Cơ Bản</h4>
+                            <p class="text-xs text-gray-400 mb-4">Mở khóa 5 phút AI quét live tự động nhặt xu.</p>
+                        </div>
+                        <div class="pt-4 border-t border-darkBorder flex items-center justify-between">
+                            <span class="text-lg font-bold text-yellow-400"><i class="fa-solid fa-coins"></i> 500 Coin</span>
+                            <button onclick="App.buyPresetKey(5, 500)" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition">Mua Ngay</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-darkCard p-6 rounded-2xl border border-darkBorder flex flex-col justify-between">
+                        <div>
+                            <span class="bg-brand-500/10 text-brand-400 text-xs font-bold px-3 py-1 rounded-full border border-brand-500/20">10 PHÚT</span>
+                            <h4 class="text-lg font-bold text-white mt-3 mb-1">Gói Tiêu Chuẩn</h4>
+                            <p class="text-xs text-gray-400 mb-4">Mở khóa 10 phút AI quét live tự động nhặt xu.</p>
+                        </div>
+                        <div class="pt-4 border-t border-darkBorder flex items-center justify-between">
+                            <span class="text-lg font-bold text-yellow-400"><i class="fa-solid fa-coins"></i> 1,000 Coin</span>
+                            <button onclick="App.buyPresetKey(10, 1000)" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition">Mua Ngay</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-darkCard p-6 rounded-2xl border border-darkBorder flex flex-col justify-between">
+                        <div>
+                            <span class="bg-brand-500/10 text-brand-400 text-xs font-bold px-3 py-1 rounded-full border border-brand-500/20">30 PHÚT</span>
+                            <h4 class="text-lg font-bold text-white mt-3 mb-1">Gói Cao Cấp</h4>
+                            <p class="text-xs text-gray-400 mb-4">Mở khóa 30 phút AI quét live tự động nhặt xu.</p>
+                        </div>
+                        <div class="pt-4 border-t border-darkBorder flex items-center justify-between">
+                            <span class="text-lg font-bold text-yellow-400"><i class="fa-solid fa-coins"></i> 3,000 Coin</span>
+                            <button onclick="App.buyPresetKey(30, 3000)" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition">Mua Ngay</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: KHO KEY CỦA TÔI -->
+            <div id="tabPane-mykeys" class="tab-pane hidden space-y-6">
+                <div class="bg-darkCard p-6 rounded-2xl border border-darkBorder space-y-4">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-key text-brand-400"></i> Kho Key Đã Sở Hữu
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-300">
+                            <thead class="bg-darkBg text-xs uppercase text-gray-400 border-b border-darkBorder">
+                                <tr>
+                                    <th class="p-3">Mã Key VIP</th>
+                                    <th class="p-3">Thời Lượng</th>
+                                    <th class="p-3">Trạng Thái</th>
+                                    <th class="p-3">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myKeysTable" class="divide-y divide-darkBorder">
+                                <!-- Render dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: TIKTOK LIVE AI AUTOMATION -->
+            <div id="tabPane-live" class="tab-pane hidden space-y-6">
+                <!-- Xác nhận key -->
+                <div id="liveKeyCard" class="bg-darkCard p-8 rounded-2xl border border-darkBorder max-w-lg mx-auto text-center space-y-4">
+                    <i class="fa-solid fa-shield-halved text-4xl text-brand-400"></i>
+                    <h3 class="text-xl font-bold text-white">Xác Nhận Key Truy Cập Live AI</h3>
+                    <p class="text-xs text-gray-400">Mỗi key chỉ được sử dụng 1 lần duy nhất để khởi động hệ thống.</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="inputLiveKey" placeholder="Nhập mã key..." class="flex-1 bg-darkBg border border-darkBorder rounded-xl px-4 py-2.5 text-sm font-mono font-bold text-center text-white focus:outline-none focus:border-brand-500">
+                        <button onclick="App.activateLiveSession()" class="bg-brand-600 hover:bg-brand-500 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">Kích Hoạt</button>
+                    </div>
+                </div>
+
+                <!-- Màn hình live streaming khi kích hoạt thành công -->
+                <div id="liveStreamUI" class="hidden space-y-6">
+                    <div class="bg-darkCard p-4 rounded-xl border border-darkBorder flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full bg-red-500 animate-ping"></div>
+                            <span class="text-xs font-bold text-red-500 uppercase tracking-widest">LIVE STREAMING ACTIVE</span>
+                            <span id="liveDurationBadge" class="bg-brand-500/20 text-brand-400 text-xs font-bold px-3 py-1 rounded-full border border-brand-500/30">VIP 5 Phút</span>
+                        </div>
+                        <button onclick="App.exitLiveSession()" class="text-xs bg-red-600/20 text-red-400 hover:bg-red-600/30 px-3 py-1.5 rounded-lg border border-red-500/30">Thoát Live</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Simulated Video Player -->
+                        <div class="lg:col-span-2 bg-black rounded-2xl border border-darkBorder h-[400px] relative overflow-hidden flex flex-col justify-between p-4 bg-gradient-to-b from-gray-900 to-black">
+                            <div id="giftContainer" class="absolute inset-0 pointer-events-none z-10"></div>
+                            
+                            <div class="flex justify-between items-center z-10">
+                                <div class="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-full border border-white/10">
+                                    <div class="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center text-xs font-bold text-white">VN</div>
+                                    <div>
+                                        <div class="text-xs font-bold text-white">vohoainam.net Live Channel</div>
+                                        <div class="text-[10px] text-gray-400"><i class="fa-solid fa-eye"></i> 14,200 xem</div>
+                                    </div>
+                                </div>
+                                <div class="bg-yellow-500/20 border border-yellow-500/40 px-3 py-1 rounded-full text-xs text-yellow-300 font-bold">
+                                    🎁 Rương Xu Auto Quét
+                                </div>
+                            </div>
+
+                            <div class="z-10 space-y-3">
+                                <div id="liveChatBox" class="h-28 overflow-y-auto text-xs space-y-1.5 pr-2 flex flex-col justify-end">
+                                    <p class="text-gray-400"><span class="text-brand-400 font-bold">Hệ thống:</span> AI bắt đầu quét rương tự động...</p>
+                                </div>
+
+                                <div class="flex items-center gap-2 pt-2 border-t border-white/10">
+                                    <span class="text-xs text-gray-400 font-bold">Tặng quà:</span>
+                                    <button onclick="App.sendGift('Hoa Hồng', 10)" class="bg-white/10 hover:bg-white/20 text-xs px-2.5 py-1 rounded-lg">🌹 10 Xu</button>
+                                    <button onclick="App.sendGift('Thả Tim', 50)" class="bg-white/10 hover:bg-white/20 text-xs px-2.5 py-1 rounded-lg">💖 50 Xu</button>
+                                    <button onclick="App.sendGift('Siêu Xe', 200)" class="bg-white/10 hover:bg-white/20 text-xs px-2.5 py-1 rounded-lg">🏎️ 200 Xu</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Rooms List -->
+                        <div class="bg-darkCard p-4 rounded-2xl border border-darkBorder space-y-4">
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-list-ul text-brand-400"></i> Phòng Live Đang Quét
+                            </h4>
+                            <div id="liveRoomsList" class="space-y-2 max-h-[320px] overflow-y-auto">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: LỊCH SỬ -->
+            <div id="tabPane-history" class="tab-pane hidden space-y-6">
+                <div class="bg-darkCard p-6 rounded-2xl border border-darkBorder space-y-4">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-brand-400"></i> Nhật Ký Hoạt Động
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-300">
+                            <thead class="bg-darkBg text-xs uppercase text-gray-400 border-b border-darkBorder">
+                                <tr>
+                                    <th class="p-3">Thời Gian</th>
+                                    <th class="p-3">Hành Động</th>
+                                    <th class="p-3">Chi Tiết</th>
+                                    <th class="p-3">Xu Thay Đổi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTable" class="divide-y divide-darkBorder">
+                                <!-- Render dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: ADMIN PANEL (Chỉ tài khoản haune thấy) -->
+            <div id="tabPane-admin" class="tab-pane hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-darkCard p-4 rounded-xl border border-darkBorder">
+                        <div class="text-xs text-gray-400">Tổng Thành Viên</div>
+                        <div id="statMembers" class="text-xl font-black text-white mt-1">0</div>
+                    </div>
+                    <div class="bg-darkCard p-4 rounded-xl border border-darkBorder">
+                        <div class="text-xs text-gray-400">Tổng Key Hệ Thống</div>
+                        <div id="statKeys" class="text-xl font-black text-brand-400 mt-1">0</div>
+                    </div>
+                    <div class="bg-darkCard p-4 rounded-xl border border-darkBorder">
+                        <div class="text-xs text-gray-400">Giftcode Hoạt Động</div>
+                        <div id="statCodes" class="text-xl font-black text-yellow-400 mt-1">0</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Tạo Giftcode -->
+                    <div class="bg-darkCard p-6 rounded-2xl border border-darkBorder space-y-4">
+                        <h3 class="text-md font-bold text-white flex items-center gap-2 border-b border-darkBorder pb-3">
+                            <i class="fa-solid fa-code text-yellow-400"></i> Tạo Mã Giftcode Mới
+                        </h3>
+                        <form onsubmit="App.adminCreateGiftcode(event)" class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Mã Code</label>
+                                    <input type="text" id="adminCodeVal" placeholder="HAULE2026" required class="w-full bg-darkBg border border-darkBorder rounded-lg px-3 py-2 text-sm uppercase font-mono text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Xu Thưởng</label>
+                                    <input type="number" id="adminCodeCoins" placeholder="1000" min="1" required class="w-full bg-darkBg border border-darkBorder rounded-lg px-3 py-2 text-sm text-white">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Giới Hạn Lượt Nhập</label>
+                                <input type="number" id="adminCodeMax" placeholder="50" min="1" required class="w-full bg-darkBg border border-darkBorder rounded-lg px-3 py-2 text-sm text-white">
+                            </div>
+                            <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 rounded-lg text-sm transition">Tạo Giftcode</button>
+                        </form>
+                    </div>
+
+                    <!-- Tạo Key Thủ Công -->
+                    <div class="bg-darkCard p-6 rounded-2xl border border-darkBorder space-y-4">
+                        <h3 class="text-md font-bold text-white flex items-center gap-2 border-b border-darkBorder pb-3">
+                            <i class="fa-solid fa-key text-brand-400"></i> Tạo Key VIP Cho Thàng Viên
+                        </h3>
+                        <form onsubmit="App.adminCreateKey(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Số phút hiệu lực</label>
+                                <input type="number" id="adminKeyMins" placeholder="10" min="1" required class="w-full bg-darkBg border border-darkBorder rounded-lg px-3 py-2 text-sm text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Chỉ định tài khoản (Để trống nếu tặng tự do)</label>
+                                <input type="text" id="adminKeyOwner" placeholder="Tên member..." class="w-full bg-darkBg border border-darkBorder rounded-lg px-3 py-2 text-sm text-white">
+                            </div>
+                            <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-2 rounded-lg text-sm transition">Tạo Key Ngay</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quản Lý Thành Viên (Bảo mật: Ẩn hoàn toàn tài khoản admin) -->
+                <div class="bg-darkCard p-6 rounded-2xl border border-darkBorder space-y-4">
+                    <h3 class="text-md font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-users text-red-400"></i> Quản Lý Tài Khoản Thành Viên
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-300">
+                            <thead class="bg-darkBg text-xs uppercase text-gray-400 border-b border-darkBorder">
+                                <tr>
+                                    <th class="p-3">Tài Khoản</th>
+                                    <th class="p-3">Mật Khẩu</th>
+                                    <th class="p-3">Số Xu</th>
+                                    <th class="p-3">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminUserTable" class="divide-y divide-darkBorder">
+                                <!-- Rendered dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-darkCard border-t border-darkBorder py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500">
+            &copy; 2026 Haule System. All Rights Reserved. Optimized for vohoainam.net automation.
+        </div>
+    </footer>
+
+    <!-- SCRIPT APPLICATION LOGIC -->
+    <script>
+        const STORAGE_KEY = 'haule_system_v35_data';
+        
+        const DEFAULT_DATA = {
+            currentUser: null,
+            users: [
+                { id: 'usr_admin', username: 'haune', password: 'haune', role: 'admin', coins: 999999 }
+            ],
+            keys: [],
+            giftcodes: [],
+            logs: [],
+            liveRooms: [
+                { id: '1', host: 'TikTok Idol 01', viewers: 18500, harvest: 15 },
+                { id: '2', host: 'Game Official VN', viewers: 9400, harvest: 10 }
+            ]
+        };
+
+        const App = {
+            state: JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_DATA,
+            captchaAns: 0,
+
+            save() {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+            },
+
+            init() {
+                this.renderCaptcha();
+                this.checkSession();
+            },
+
+            renderCaptcha() {
+                const a = Math.floor(Math.random() * 10) + 1;
+                const b = Math.floor(Math.random() * 10) + 1;
+                this.captchaAns = a + b;
+                const el = document.getElementById('captchaTxt');
+                if (el) el.innerText = `${a} + ${b} = ?`;
+            },
+
+            checkSession() {
+                if (this.state.currentUser) {
+                    document.getElementById('authSection').classList.add('hidden');
+                    document.getElementById('dashboardSection').classList.remove('hidden');
+                    document.getElementById('navUserArea').classList.remove('hidden');
+                    
+                    const u = this.getCurrentUser();
+                    document.getElementById('navUserName').innerText = u.username;
+                    document.getElementById('navUserCoins').innerText = u.coins.toLocaleString();
+
+                    const roleBadge = document.getElementById('navUserRole');
+                    const adminBtn = document.getElementById('adminNavBtn');
+
+                    if (u.role === 'admin') {
+                        roleBadge.innerText = 'Admin';
+                        roleBadge.className = 'text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-red-500/20 text-red-400 border border-red-500/30';
+                        adminBtn.classList.remove('hidden');
+                        this.renderAdmin();
+                    } else {
+                        roleBadge.innerText = 'Member';
+                        roleBadge.className = 'text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-brand-500/20 text-brand-400 border border-brand-500/30';
+                        adminBtn.classList.add('hidden');
+                    }
+
+                    this.renderMyKeys();
+                    this.renderHistory();
+                    this.renderLiveRooms();
+                } else {
+                    document.getElementById('authSection').classList.remove('hidden');
+                    document.getElementById('dashboardSection').classList.add('hidden');
+                    document.getElementById('navUserArea').classList.add('hidden');
+                }
+            },
+
+            getCurrentUser() {
+                return this.state.users.find(x => x.username === this.state.currentUser.username) || this.state.currentUser;
+            },
+
+            switchAuthTab(tab) {
+                if (tab === 'login') {
+                    document.getElementById('formLogin').classList.remove('hidden');
+                    document.getElementById('formRegister').classList.add('hidden');
+                    document.getElementById('authTabLoginBtn').className = 'flex-1 py-2 font-bold text-brand-500 border-b-2 border-brand-500 transition';
+                    document.getElementById('authTabRegBtn').className = 'flex-1 py-2 font-bold text-gray-400 hover:text-white transition';
+                } else {
+                    document.getElementById('formLogin').classList.add('hidden');
+                    document.getElementById('formRegister').classList.remove('hidden');
+                    document.getElementById('authTabRegBtn').className = 'flex-1 py-2 font-bold text-brand-500 border-b-2 border-brand-500 transition';
+                    document.getElementById('authTabLoginBtn').className = 'flex-1 py-2 font-bold text-gray-400 hover:text-white transition';
+                    this.renderCaptcha();
+                }
+            },
+
+            handleLogin(e) {
+                e.preventDefault();
+                const u = document.getElementById('loginUser').value.trim();
+                const p = document.getElementById('loginPass').value.trim();
+
+                const user = this.state.users.find(x => x.username === u && x.password === p);
+                if (user) {
+                    this.state.currentUser = { username: user.username, role: user.role };
+                    this.save();
+                    this.checkSession();
+                } else {
+                    alert('Sai tài khoản hoặc mật khẩu!');
+                }
+            },
+
+            handleRegister(e) {
+                e.preventDefault();
+                const u = document.getElementById('regUser').value.trim();
+                const p = document.getElementById('regPass').value.trim();
+                const cap = parseInt(document.getElementById('regCaptcha').value);
+
+                if (cap !== this.captchaAns) {
+                    alert('Xác minh captcha không đúng!');
+                    this.renderCaptcha();
+                    return;
+                }
+
+                if (this.state.users.some(x => x.username === u)) {
+                    alert('Tên tài khoản đã tồn tại!');
+                    return;
+                }
+
+                this.state.users.push({ id: 'usr_' + Date.now(), username: u, password: p, role: 'member', coins: 100 });
+                this.state.currentUser = { username: u, role: 'member' };
+                this.save();
+                this.checkSession();
+                alert('Đăng ký thành công! Tặng bạn 100 xu khởi nghiệp.');
+            },
+
+            logout() {
+                this.state.currentUser = null;
+                this.save();
+                this.checkSession();
+            },
+
+            switchTab(tab) {
+                document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.tab-nav-btn').forEach(el => {
+                    el.classList.remove('bg-brand-600', 'text-white');
+                    el.classList.add('bg-darkCard', 'text-gray-400');
+                });
+
+                document.getElementById(`tabPane-${tab}`).classList.remove('hidden');
+                const btn = document.getElementById(`navBtn-${tab}`) || document.getElementById('adminNavBtn');
+                if (btn && tab !== 'admin') {
+                    btn.classList.remove('bg-darkCard', 'text-gray-400');
+                    btn.classList.add('bg-brand-600', 'text-white');
+                }
+            },
+
+            calcCustomPrice() {
+                const mins = parseInt(document.getElementById('shopMinutesInput').value) || 0;
+                document.getElementById('shopPriceDisplay').innerText = (mins * 100).toLocaleString();
+            },
+
+            createCustomKey(e) {
+                e.preventDefault();
+                const mins = parseInt(document.getElementById('shopMinutesInput').value);
+                const cost = mins * 100;
+                const u = this.getCurrentUser();
+
+                if (u.coins < cost) {
+                    alert(`Không đủ xu! Cần ${cost.toLocaleString()} xu.`);
+                    return;
+                }
+
+                u.coins -= cost;
+                const keyId = 'HAULE-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                this.state.keys.push({ id: keyId, owner: u.username, duration: mins, status: 'unused' });
+                this.logAction(u.username, 'Mua Key', `Tạo key ${mins} phút`, -cost);
+                this.save();
+                this.checkSession();
+                alert(`Tạo key thành công! Mã: ${keyId}`);
+                this.switchTab('mykeys');
+            },
+
+            buyPresetKey(mins, cost) {
+                const u = this.getCurrentUser();
+                if (u.coins < cost) {
+                    alert('Số dư xu không đủ!');
+                    return;
+                }
+
+                u.coins -= cost;
+                const keyId = 'HAULE-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                this.state.keys.push({ id: keyId, owner: u.username, duration: mins, status: 'unused' });
+                this.logAction(u.username, 'Mua Key Gói', `Gói ${mins} phút`, -cost);
+                this.save();
+                this.checkSession();
+                alert(`Mua thành công! Mã key: ${keyId}`);
+                this.switchTab('mykeys');
+            },
+
+            redeemGiftcode(e) {
+                e.preventDefault();
+                const codeVal = document.getElementById('inputGiftcodeVal').value.trim().toUpperCase();
+                const gift = this.state.giftcodes.find(x => x.code === codeVal);
+
+                if (!gift) {
+                    alert('Mã Giftcode không tồn tại!');
+                    return;
+                }
+
+                if (gift.used >= gift.max) {
+                    alert('Mã Giftcode đã hết lượt sử dụng!');
+                    return;
+                }
+
+                const u = this.getCurrentUser();
+                u.coins += gift.coins;
+                gift.used += 1;
+                this.logAction(u.username, 'Nhập Giftcode', `Mã ${codeVal}`, gift.coins);
+                this.save();
+                this.checkSession();
+                document.getElementById('inputGiftcodeVal').value = '';
+                alert(`Đổi thành công! +${gift.coins.toLocaleString()} xu.`);
+            },
+
+            renderMyKeys() {
+                const tbody = document.getElementById('myKeysTable');
+                const u = this.getCurrentUser();
+                const keys = this.state.keys.filter(k => k.owner === u.username);
+
+                if (keys.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Chưa có key nào trong kho.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = keys.map(k => `
+                    <tr>
+                        <td class="p-3 font-mono font-bold text-brand-400">${k.id}</td>
+                        <td class="p-3">${k.duration} Phút</td>
+                        <td class="p-3"><span class="px-2 py-0.5 text-xs rounded font-bold ${k.status === 'unused' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}">${k.status === 'unused' ? 'Sẵn Sàng' : 'Đã Dùng'}</span></td>
+                        <td class="p-3">${k.status === 'unused' ? `<button onclick="App.useKey('${k.id}')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs px-3 py-1 rounded font-bold">Vào Live</button>` : '-'}</td>
+                    </tr>
+                `).join('');
+            },
+
+            useKey(keyId) {
+                document.getElementById('inputLiveKey').value = keyId;
+                this.switchTab('live');
+                this.activateLiveSession();
+            },
+
+            activateLiveSession() {
+                const keyVal = document.getElementById('inputLiveKey').value.trim();
+                const keyObj = this.state.keys.find(k => k.id === keyVal && k.status === 'unused');
+
+                if (!keyObj) {
+                    alert('Key không hợp lệ hoặc đã qua sử dụng!');
+                    return;
+                }
+
+                keyObj.status = 'used';
+                this.save();
+
+                document.getElementById('liveKeyCard').classList.add('hidden');
+                document.getElementById('liveStreamUI').classList.remove('hidden');
+                document.getElementById('liveDurationBadge').innerText = `VIP ${keyObj.duration} Phút`;
+                this.startLiveBot();
+            },
+
+            exitLiveSession() {
+                document.getElementById('liveKeyCard').classList.remove('hidden');
+                document.getElementById('liveStreamUI').classList.add('hidden');
+            },
+
+            startLiveBot() {
+                const chatBox = document.getElementById('liveChatBox');
+                setInterval(() => {
+                    const u = this.getCurrentUser();
+                    const harvested = Math.floor(Math.random() * 12) + 3;
+                    u.coins += harvested;
+                    document.getElementById('navUserCoins').innerText = u.coins.toLocaleString();
+                    
+                    const p = document.createElement('p');
+                    p.className = 'text-green-400';
+                    p.innerHTML = `<span class="font-bold">AI Bot:</span> Nhặt thành công +${harvested} xu từ phiên live!`;
+                    chatBox.appendChild(p);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, 3500);
+            },
+
+            sendGift(name, cost) {
+                const u = this.getCurrentUser();
+                if (u.coins < cost) {
+                    alert('Không đủ xu để tặng quà!');
+                    return;
+                }
+                u.coins -= cost;
+                document.getElementById('navUserCoins').innerText = u.coins.toLocaleString();
+                this.save();
+
+                const container = document.getElementById('giftContainer');
+                const el = document.createElement('div');
+                el.className = 'gift-anim absolute bottom-10 left-1/2 font-bold text-yellow-300 text-sm';
+                el.innerText = `🎁 ${u.username} đã tặng ${name}!`;
+                container.appendChild(el);
+                setTimeout(() => el.remove(), 1800);
+            },
+
+            renderLiveRooms() {
+                const box = document.getElementById('liveRoomsList');
+                if (!box) return;
+                box.innerHTML = this.state.liveRooms.map(r => `
+                    <div class="bg-darkBg p-2.5 rounded-xl border border-darkBorder flex items-center justify-between text-xs">
+                        <div>
+                            <div class="font-bold text-white">${r.host}</div>
+                            <div class="text-gray-400"><i class="fa-solid fa-users text-brand-400"></i> ${r.viewers.toLocaleString()}</div>
+                        </div>
+                        <span class="text-green-400 font-bold">+${r.harvest} Xu/p</span>
+                    </div>
+                `).join('');
+            },
+
+            logAction(username, type, detail, diff) {
+                this.state.logs.unshift({
+                    time: new Date().toLocaleTimeString('vi-VN') + ' ' + new Date().toLocaleDateString('vi-VN'),
+                    username, type, detail, diff
+                });
+                if (this.state.logs.length > 50) this.state.logs.pop();
+            },
+
+            renderHistory() {
+                const tbody = document.getElementById('historyTable');
+                const u = this.getCurrentUser();
+                const logs = this.state.logs.filter(l => l.username === u.username);
+
+                if (logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Chưa có lịch sử hoạt động.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = logs.map(l => `
+                    <tr>
+                        <td class="p-3 text-xs text-gray-400">${l.time}</td>
+                        <td class="p-3 font-bold text-white">${l.type}</td>
+                        <td class="p-3 text-xs text-gray-300">${l.detail}</td>
+                        <td class="p-3 font-bold ${l.diff >= 0 ? 'text-green-400' : 'text-red-400'}">${l.diff >= 0 ? '+' : ''}${l.diff.toLocaleString()} Xu</td>
+                    </tr>
+                `).join('');
+            },
+
+            renderAdmin() {
+                const members = this.state.users.filter(x => x.role !== 'admin');
+                document.getElementById('statMembers').innerText = members.length;
+                document.getElementById('statKeys').innerText = this.state.keys.length;
+                document.getElementById('statCodes').innerText = this.state.giftcodes.length;
+
+                const tbody = document.getElementById('adminUserTable');
+                tbody.innerHTML = members.map(m => `
+                    <tr>
+                        <td class="p-3 font-bold text-white">${m.username}</td>
+                        <td class="p-3 font-mono text-yellow-400 text-xs">${m.password}</td>
+                        <td class="p-3 font-bold text-yellow-400">${m.coins.toLocaleString()} Xu</td>
+                        <td class="p-3 flex gap-2">
+                            <button onclick="App.adminEditCoins('${m.username}')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-2.5 py-1 rounded">Sửa Xu</button>
+                            <button onclick="App.adminDelUser('${m.username}')" class="bg-red-600 hover:bg-red-500 text-white text-xs px-2.5 py-1 rounded">Xóa</button>
+                        </td>
+                    </tr>
+                `).join('');
+            },
+
+            adminCreateGiftcode(e) {
+                e.preventDefault();
+                const code = document.getElementById('adminCodeVal').value.trim().toUpperCase();
+                const coins = parseInt(document.getElementById('adminCodeCoins').value);
+                const max = parseInt(document.getElementById('adminCodeMax').value);
+
+                if (this.state.giftcodes.some(c => c.code === code)) {
+                    alert('Mã giftcode này đã tồn tại!');
+                    return;
+                }
+
+                this.state.giftcodes.push({ code, coins, max, used: 0 });
+                this.save();
+                this.renderAdmin();
+                alert(`Đã tạo Giftcode ${code} thành công!`);
+            },
+
+            adminCreateKey(e) {
+                e.preventDefault();
+                const mins = parseInt(document.getElementById('adminKeyMins').value);
+                const owner = document.getElementById('adminKeyOwner').value.trim() || 'Hệ thống';
+                const keyId = 'HAULE-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+                this.state.keys.push({ id: keyId, owner, duration: mins, status: 'unused' });
+                this.save();
+                this.renderAdmin();
+                alert(`Đã tạo thành công Key: ${keyId}`);
+            },
+
+            adminEditCoins(username) {
+                const u = this.state.users.find(x => x.username === username);
+                if (!u) return;
+                const val = prompt(`Nhập số xu mới cho ${username}:`, u.coins);
+                if (val !== null && !isNaN(val)) {
+                    u.coins = parseInt(val);
+                    this.save();
+                    this.renderAdmin();
+                }
+            },
+
+            adminDelUser(username) {
+                if (confirm(`Bạn có chắc muốn xóa thành viên ${username}?`)) {
+                    this.state.users = this.state.users.filter(x => x.username !== username);
+                    this.save();
+                    this.renderAdmin();
+                }
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            App.init();
+        });
+    </script>
+</body>
+</html>
